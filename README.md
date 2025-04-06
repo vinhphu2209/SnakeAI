@@ -10,7 +10,7 @@ Dự án game Snake sử dụng AI để điều khiển rắn tự động.
 
 1. Clone repository về máy:
 ```bash
-git clone [đường dẫn repository]
+git clone https://github.com/vinhphu2209/SnakeAI.git
 ```
 
 2. Tạo và kích hoạt môi trường ảo:
@@ -54,6 +54,6 @@ SnakeGame/
 ```
 
 ## Lưu ý
-- Đảm bảo đã cài đặt Python trước khi chạy
-- Nếu gặp lỗi về thư viện, hãy chạy lại lệnh cài đặt requirements
-- Liên hệ nhóm trưởng nếu gặp vấn đề 
+- Đảm bảo đã cài đặt Python trước khi chạy.
+- Nếu gặp lỗi về thư viện, hãy chạy lại lệnh cài đặt requirements.
+- Liên hệ PhuLe nếu gặp vấn đề.
