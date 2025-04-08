@@ -39,8 +39,7 @@ def a_star_search(snake_body, start, goal, grid_size):
         path.reverse() # Dao nguoc lai de co duoc duong di
     return path
 
-
-def bfs(snake_body,player_body, start, goal, grid_size):
+def bfs(snake_body, start, goal, grid_size, player_body=None):
     directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]  
     queue = deque([start])
     came_from = {start: None}
@@ -55,12 +54,12 @@ def bfs(snake_body,player_body, start, goal, grid_size):
         for direction in directions:
             neighbor = (current[0] + direction[0], current[1] + direction[1])
             if (0 <= neighbor[0] < grid_size and 0 <= neighbor[1] < grid_size and 
-                neighbor not in visited and neighbor not in snake_body and neighbor not in player_body):
+                neighbor not in visited and neighbor not in snake_body and 
+                (player_body is None or neighbor not in player_body)):
                 queue.append(neighbor)
                 visited.add(neighbor)
                 came_from[neighbor] = current
 
-  
     path = []
     if goal in came_from:
         current = goal
@@ -77,41 +76,43 @@ class SNAKE:
         self.new_block = False
 
         # Load graphics for AI snake
-        self.head_up = pygame.image.load('Graphics/head_up.png').convert_alpha()
-        self.head_down = pygame.image.load('Graphics/head_down.png').convert_alpha()
-        self.head_right = pygame.image.load('Graphics/head_right.png').convert_alpha()
-        self.head_left = pygame.image.load('Graphics/head_left.png').convert_alpha()
+        self.head_up = pygame.image.load('assets/graphics/head_up.png').convert_alpha()
+        self.head_down = pygame.image.load('assets/graphics/head_down.png').convert_alpha()
+        self.head_right = pygame.image.load('assets/graphics/head_right.png').convert_alpha()
+        self.head_left = pygame.image.load('assets/graphics/head_left.png').convert_alpha()
 
-        self.tail_up = pygame.image.load('Graphics/tail_up.png').convert_alpha()
-        self.tail_down = pygame.image.load('Graphics/tail_down.png').convert_alpha()
-        self.tail_right = pygame.image.load('Graphics/tail_right.png').convert_alpha()
-        self.tail_left = pygame.image.load('Graphics/tail_left.png').convert_alpha()
+        self.tail_up = pygame.image.load('assets/graphics/tail_up.png').convert_alpha()
+        self.tail_down = pygame.image.load('assets/graphics/tail_down.png').convert_alpha()
+        self.tail_right = pygame.image.load('assets/graphics/tail_right.png').convert_alpha()
+        self.tail_left = pygame.image.load('assets/graphics/tail_left.png').convert_alpha()
 
-        self.body_vertical = pygame.image.load('Graphics/body_vertical.png').convert_alpha()
-        self.body_horizontal = pygame.image.load('Graphics/body_horizontal.png').convert_alpha()
+        self.body_vertical = pygame.image.load('assets/graphics/body_vertical.png').convert_alpha()
+        self.body_horizontal = pygame.image.load('assets/graphics/body_horizontal.png').convert_alpha()
 
-        self.body_tr = pygame.image.load('Graphics/body_tr.png').convert_alpha()
-        self.body_tl = pygame.image.load('Graphics/body_tl.png').convert_alpha()
-        self.body_br = pygame.image.load('Graphics/body_br.png').convert_alpha()
-        self.body_bl = pygame.image.load('Graphics/body_bl.png').convert_alpha()
+        self.body_tr = pygame.image.load('assets/graphics/body_tr.png').convert_alpha()
+        self.body_tl = pygame.image.load('assets/graphics/body_tl.png').convert_alpha()
+        self.body_br = pygame.image.load('assets/graphics/body_br.png').convert_alpha()
+        self.body_bl = pygame.image.load('assets/graphics/body_bl.png').convert_alpha()
 
-        self.crunch_sound = pygame.mixer.Sound('Sound/crunch.wav')
+        self.crunch_sound = pygame.mixer.Sound('assets/sound/crunch.wav')
 
-    def move_snake(self, fruit_pos, cell_number, selected_algorithm):
-
+    def move_snake(self, fruit_pos, cell_number, selected_algorithm='a_star', player_body=None):
+        """Di chuyển rắn AI sử dụng thuật toán được chọn"""
         snake_head = self.body[0]
         snake_body_set = set((block.x, block.y) for block in self.body[1:])
+        player_body_set = set((block.x, block.y) for block in player_body) if player_body else None
 
         if selected_algorithm == 'a_star':
             path = a_star_search(snake_body_set,
-                                 (snake_head.x, snake_head.y),
-                                 (fruit_pos.x, fruit_pos.y),
-                                 cell_number)
+                               (snake_head.x, snake_head.y),
+                               (fruit_pos.x, fruit_pos.y),
+                               cell_number)
         else:  # BFS
             path = bfs(snake_body_set,
-                       (snake_head.x, snake_head.y),
-                       (fruit_pos.x, fruit_pos.y),
-                       cell_number)
+                      (snake_head.x, snake_head.y),
+                      (fruit_pos.x, fruit_pos.y),
+                      cell_number,
+                      player_body_set)
 
         if path:
             next_move = Vector2(path[0][0], path[0][1]) - snake_head
@@ -127,27 +128,6 @@ class SNAKE:
             body_copy = self.body[:-1]
             body_copy.insert(0, body_copy[0] + self.direction)
             self.body = body_copy[:]
-
-    # def move_snake(self, fruit_pos, player_body, cell_number):
-    #     snake_head = self.body[0]
-    #     snake_body_set = set((block.x, block.y) for block in self.body[1:])
-    #     player_body_set = set((block.x, block.y) for block in player_body)
-    #     path = bfs(snake_body_set, player_body_set, (snake_head.x, snake_head.y), (fruit_pos.x, fruit_pos.y), cell_number)
-    #
-    #     if path:
-    #         next_move = Vector2(path[0][0], path[0][1]) - snake_head
-    #         if abs(next_move.x) <= 1 and abs(next_move.y) <= 1:
-    #             self.direction = next_move
-    #
-    #     if self.new_block:
-    #         body_copy = self.body[:]
-    #         body_copy.insert(0, body_copy[0] + self.direction)
-    #         self.body = body_copy[:]
-    #         self.new_block = False
-    #     else:
-    #         body_copy = self.body[:-1]
-    #         body_copy.insert(0, body_copy[0] + self.direction)
-    #         self.body = body_copy[:]
 
     def draw_snake(self, screen, cell_size):
         self.update_head_graphics()

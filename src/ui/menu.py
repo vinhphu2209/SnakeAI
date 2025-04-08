@@ -1,32 +1,32 @@
 import pygame
 import sys
-from scoreboard import show_scoreboard  # Import scoreboard
+from src.db.manager import GameDB
 
 pygame.init()
 
-SCREEN = pygame.display.set_mode((800, 800))
-pygame.display.set_caption("Menu")
+SCREEN = None
 
-BG = pygame.image.load('assets/Background.png')
-BG = pygame.transform.scale(BG, (800, 800))
+# Colors
+BG_COLOR = (40, 40, 40)  # Dark gray
+BUTTON_COLOR = (60, 60, 60)  # Light gray
+TEXT_COLOR = (215, 252, 212)  # Light green
+HOVER_COLOR = (255, 255, 255)  # White
+TITLE_COLOR = (182, 143, 64)  # Gold
 
 class Menu_Button():
-    def __init__(self, image, pos, text_input, font, base_color, hovering_color):
-        self.image = image
+    def __init__(self, pos, text_input, font, base_color, hovering_color):
         self.x_pos = pos[0]
         self.y_pos = pos[1]
         self.font = font
         self.base_color, self.hovering_color = base_color, hovering_color
         self.text_input = text_input
         self.text = self.font.render(self.text_input, True, self.base_color)
-        if self.image is None:
-            self.image = self.text
-        self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
+        self.rect = pygame.Rect(0, 0, 300, 60)  # Button size
+        self.rect.center = (self.x_pos, self.y_pos)
         self.text_rect = self.text.get_rect(center=(self.x_pos, self.y_pos))
 
     def update(self, screen):
-        if self.image is not None:
-            screen.blit(self.image, self.rect)
+        pygame.draw.rect(screen, BUTTON_COLOR, self.rect, border_radius=12)
         screen.blit(self.text, self.text_rect)
 
     def checkForInput(self, position):
@@ -40,88 +40,55 @@ class Menu_Button():
 
 def get_font(size):
     """Hàm tải font từ assets với kích thước tùy chỉnh."""
-    return pygame.font.Font("assets/font.ttf", size)
+    return pygame.font.Font("assets/fonts/PoetsenOne-Regular.ttf", size)
 
-def play():
-    """Giả lập bắt đầu chơi."""
-    return 'playing'
+def save_score(score, agent_type, metadata=None):
+    db = GameDB()
+    db.save_score(score, agent_type, metadata)
+    db.close()
 
-def options():
+def ai_menu(game_state):
+    # Khởi tạo màn hình nếu chưa có
+    global SCREEN
+    if SCREEN is None:
+        SCREEN = pygame.display.set_mode((800, 800))
+        pygame.display.set_caption("Snake AI")
+
     while True:
-        OPTIONS_MOUSE_POS = pygame.mouse.get_pos()
-
-        SCREEN.blit(BG, (0, 0))
-
-        OPTIONS_TEXT = get_font(75).render("OPTIONS", True, "#b68f40")
-        OPTIONS_RECT = OPTIONS_TEXT.get_rect(center=(400, 100))
-        SCREEN.blit(OPTIONS_TEXT, OPTIONS_RECT)
-
-        BFS_BUTTON = Menu_Button(
-            image=pygame.image.load("assets/Play Rect.png"), pos=(400, 300),
-            text_input="BFS MODE", font=get_font(40),
-            base_color="#d7fcd4", hovering_color="White"
-        )
-        BFS_BUTTON.changeColor(OPTIONS_MOUSE_POS)
-        BFS_BUTTON.update(SCREEN)
-
-        A_STAR_BUTTON = Menu_Button(
-            image=pygame.image.load("assets/Options Rect.png"), pos=(400, 500),
-            text_input="A* SEARCH MODE", font=get_font(40),
-            base_color="#d7fcd4", hovering_color="White"
-        )
-        A_STAR_BUTTON.changeColor(OPTIONS_MOUSE_POS)
-        A_STAR_BUTTON.update(SCREEN)
-
-        OPTIONS_BACK = Menu_Button(
-            image=pygame.image.load("assets/Quit Rect.png"), pos=(400, 700),
-            text_input="BACK", font=get_font(75),
-            base_color="#d7fcd4", hovering_color="White"
-        )
-        OPTIONS_BACK.changeColor(OPTIONS_MOUSE_POS)
-        OPTIONS_BACK.update(SCREEN)
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if BFS_BUTTON.checkForInput(OPTIONS_MOUSE_POS):
-                    global selected_algorithm
-                    selected_algorithm = 'bfs'
-                    print("Thuật toán đã chọn: BFS")  # Debug
-
-                if A_STAR_BUTTON.checkForInput(OPTIONS_MOUSE_POS):
-                    selected_algorithm = 'a_star'
-                    print("Thuật toán đã chọn: A*")  # Debug
-
-                if OPTIONS_BACK.checkForInput(OPTIONS_MOUSE_POS):
-                    return
-
-        pygame.display.update()
-
-
-def main_menu(game_state):
-    """Hiển thị menu chính."""
-    while game_state == 'menu':
-        SCREEN.blit(BG, (0, 0))
+        SCREEN.fill(BG_COLOR)
 
         MENU_MOUSE_POS = pygame.mouse.get_pos()
 
-        # Tiêu đề
-        MENU_TEXT = get_font(75).render("MAIN MENU", True, "#b68f40")
+        MENU_TEXT = get_font(100).render("SNAKE AI", True, TITLE_COLOR)
         MENU_RECT = MENU_TEXT.get_rect(center=(400, 100))
+
+        WATCH_BFS_BUTTON = Menu_Button(
+            pos=(400, 250),
+            text_input="WATCH BFS", font=get_font(40),
+            base_color=TEXT_COLOR, hovering_color=HOVER_COLOR
+        )
+
+        WATCH_ASTAR_BUTTON = Menu_Button(
+            pos=(400, 400),
+            text_input="WATCH A*", font=get_font(40),
+            base_color=TEXT_COLOR, hovering_color=HOVER_COLOR
+        )
+
+        TRAIN_AI_BUTTON = Menu_Button(
+            pos=(400, 550),
+            text_input="TRAIN RL", font=get_font(40),
+            base_color=TEXT_COLOR, hovering_color=HOVER_COLOR
+        )
+
+        SCOREBOARD_BUTTON = Menu_Button(
+            pos=(400, 700),
+            text_input="SCOREBOARD", font=get_font(40),
+            base_color=TEXT_COLOR, hovering_color=HOVER_COLOR
+        )
+
         SCREEN.blit(MENU_TEXT, MENU_RECT)
 
-        PLAY_BUTTON = Menu_Button(pygame.image.load("assets/Play Rect.png"), (400, 250),
-                                  "PLAY", get_font(40), "#d7fcd4", "White")
-        OPTIONS_BUTTON = Menu_Button(pygame.image.load("assets/Options Rect.png"), (400, 400),
-                                     "OPTIONS", get_font(40), "#d7fcd4", "White")
-        SCOREBOARD_BUTTON = Menu_Button(pygame.image.load("assets/Options Rect.png"), (400, 550),
-                                        "SCOREBOARD", get_font(40), "#d7fcd4", "White")
-        QUIT_BUTTON = Menu_Button(pygame.image.load("assets/Quit Rect.png"), (400, 700),
-                                  "QUIT", get_font(40), "#d7fcd4", "White")
-
-        for button in [PLAY_BUTTON, OPTIONS_BUTTON, SCOREBOARD_BUTTON, QUIT_BUTTON]:
+        for button in [WATCH_BFS_BUTTON, WATCH_ASTAR_BUTTON, TRAIN_AI_BUTTON, SCOREBOARD_BUTTON]:
             button.changeColor(MENU_MOUSE_POS)
             button.update(SCREEN)
 
@@ -130,15 +97,13 @@ def main_menu(game_state):
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if PLAY_BUTTON.checkForInput(MENU_MOUSE_POS):
-                    return play()
-                if OPTIONS_BUTTON.checkForInput(MENU_MOUSE_POS):
-                    options()
+                if WATCH_BFS_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    return 'watch_bfs'
+                if WATCH_ASTAR_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    return 'watch_astar'
+                if TRAIN_AI_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    return 'train_ai'
                 if SCOREBOARD_BUTTON.checkForInput(MENU_MOUSE_POS):
-                    show_scoreboard( SCREEN, 20, 40)
-                if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
-                    pygame.quit()
-                    sys.exit()
+                    return 'scoreboard'
 
         pygame.display.update()
-    return game_state

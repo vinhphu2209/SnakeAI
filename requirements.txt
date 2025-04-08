@@ -1,6 +1,6 @@
 ﻿pygame==2.5.2
 numpy==1.24.3
-torch==2.1.0+cu118
-torchvision==0.16.0+cu118
-torchaudio==2.1.0+cu118
+torch==2.1.0+cu118 --extra-index-url https://download.pytorch.org/whl/cu118
+torchvision==0.16.0+cu118 --extra-index-url https://download.pytorch.org/whl/cu118
+torchaudio==2.1.0+cu118 --extra-index-url https://download.pytorch.org/whl/cu118
 matplotlib==3.7.1
