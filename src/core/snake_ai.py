@@ -36,7 +36,7 @@ def a_star_search(snake_body, start, goal, grid_size):
         while current != start: # Vong lap nay bat dau tu o muc tieu (goal) va lan nguoc lai cac o ma ta da di qua
             path.append(current) # Them ho hien tai vao path
             current = came_from[current]  # Di chuyen tu o hien tai den o ma no den tu
-        path.reverse() # Dao nguoc lai de co duoc duong di
+        path.reverse() # Dao nguoc lai de co duong di
     return path
 
 def bfs(snake_body, start, goal, grid_size, player_body=None):
@@ -71,7 +71,7 @@ def bfs(snake_body, start, goal, grid_size, player_body=None):
 
 class SNAKE:
     def __init__(self):
-        self.body = [Vector2(15, 10), Vector2(14, 10), Vector2(13, 10)]
+        self.body = [Vector2(10, 10), Vector2(9, 10), Vector2(8, 10)]
         self.direction = Vector2(0, 0)
         self.new_block = False
 
@@ -179,5 +179,6 @@ class SNAKE:
         self.crunch_sound.play()
 
     def reset(self):
-        self.body = [Vector2(15, 10), Vector2(14, 10), Vector2(13, 10)]
+        self.body = [Vector2(10, 10), Vector2(9, 10), Vector2(8, 10)]
         self.direction = Vector2(0, 0)
+        self.new_block = False
