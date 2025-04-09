@@ -1,22 +1,6 @@
 import pygame
 import sys
-from database import GameDB
-
-def save_score(score, agent_type):
-    try:
-        with open('scores.json', 'r') as f:
-            scores = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        scores = []
-    
-    scores.append({
-        'score': score,
-        'agent': agent_type,
-        'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    })
-    
-    with open('scores.json', 'w') as f:
-        json.dump(scores, f, indent=4)
+from src.db.manager import GameDB
 
 def show_scoreboard(screen, cell_number, cell_size):
     """Hiển thị bảng điểm"""
@@ -45,9 +29,9 @@ def show_scoreboard(screen, cell_number, cell_size):
         
         # Vẽ các dòng điểm
         y = 150
-        for i, (score, agent_type, timestamp) in enumerate(scores, 1):
+        for i, score_doc in enumerate(scores, 1):
             # Định dạng thời gian
-            time_str = timestamp.strftime("%Y-%m-%d %H:%M")
+            time_str = score_doc['date'].strftime("%Y-%m-%d %H:%M")
             
             # Vẽ thứ hạng
             rank_text = font.render(f"{i}.", True, TEXT_COLOR)
@@ -55,12 +39,12 @@ def show_scoreboard(screen, cell_number, cell_size):
             screen.blit(rank_text, rank_rect)
             
             # Vẽ điểm số
-            score_text = font.render(f"{score}", True, TEXT_COLOR)
+            score_text = font.render(f"{score_doc['score']}", True, TEXT_COLOR)
             score_rect = score_text.get_rect(left=150, centery=y)
             screen.blit(score_text, score_rect)
             
             # Vẽ loại agent
-            agent_text = font.render(agent_type, True, TEXT_COLOR)
+            agent_text = font.render(score_doc['agent_type'], True, TEXT_COLOR)
             agent_rect = agent_text.get_rect(left=300, centery=y)
             screen.blit(agent_text, agent_rect)
             
